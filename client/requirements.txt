@@ -1,1 +1,3 @@
 requests>=2.32
+# Stock macOS Python 3.9 is built against LibreSSL, which urllib3 v2 warns about.
+urllib3<2; python_version < "3.10"
