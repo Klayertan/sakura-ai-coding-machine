@@ -18,6 +18,7 @@ Review of the 0.1.0 scaffold. The Docker image and the DOK deployment are still 
 - **Idle auto-shutdown** (`IDLE_SHUTDOWN_MINUTES`, default 60) so a forgotten task stops billing.
 - `temperature` and `max_tokens` on chat requests; token usage and generation time in replies.
 - Client: `--usage`, `--models`, `--health`, `--no-stream`, `--thinking`, `--system`, and readable errors.
+- `GATEWAY_API_KEY` as an alternative key variable, because DOK reserves the `SAKURA_` prefix.
 - Optional `BAKE_MODEL` build argument to ship model weights inside the image.
 - Backend test suite (46 tests) and a CI test job on Python 3.9 and 3.12.
 - `docs/dok-deployment.md`, `docs/repo-context-design.md`.

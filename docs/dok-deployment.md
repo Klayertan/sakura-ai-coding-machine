@@ -16,11 +16,11 @@ Facts below are from the Sakura manual and pricing page as read on 2026-10-03. I
 | One HTTP port is exposed; Sakura terminates HTTPS and forwards plain HTTP; only HTTP is supported | No TLS proxy in the container. Streaming uses plain chunked HTTP, not WebSockets. |
 | The endpoint returns 503 until the container listens on the port | The client reports this as "not ready"; retry. |
 | The HTTP feature is intended for temporary services, not permanent daemons | Fits this use: start a task for a coding session, let it shut down when idle. |
-| `SAKURA_*` environment variables are reserved; `SAKURA_TASK_ID` is provided | The API key variable is `SAKURA_AI_API_KEY`, which uses the reserved prefix (see below). |
+| `SAKURA_*` environment variables are reserved; `SAKURA_TASK_ID` is provided | `SAKURA_AI_API_KEY` uses the reserved prefix; `GATEWAY_API_KEY` is accepted as an alternative (see below). |
 
 ## Open questions to confirm on the first real task (M0)
 
-1. **`SAKURA_AI_API_KEY` uses the reserved `SAKURA_` prefix.** If the DOK console rejects or drops it, the container exits at once with a clear configuration error. The fix would be to rename the variable; this is deliberately not done before it is confirmed to be a problem.
+1. **`SAKURA_AI_API_KEY` uses the reserved `SAKURA_` prefix.** If the DOK console rejects or drops it, the container exits at once with a clear configuration error. In that case set `GATEWAY_API_KEY` on the task instead; the gateway accepts either name. (The Mac client keeps using `SAKURA_AI_API_KEY` locally, which is unaffected.)
 2. **Streaming through the DOK proxy.** If the proxy buffers responses, tokens will arrive in one burst. The gateway already sends `X-Accel-Buffering: no`; the fallback is `--no-stream`.
 3. **Proxy idle timeout.** A long non-streaming generation sends no bytes until it finishes. If DOK cuts idle connections, use streaming (the default).
 4. **GPU visibility with the `ollama/ollama` base image.** `start.sh` prints `nvidia-smi` output at boot; `/api/usage` shows VRAM in use after the first request.

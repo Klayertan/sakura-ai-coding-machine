@@ -80,7 +80,7 @@ Full details, DOK limits and troubleshooting: [docs/dok-deployment.md](docs/dok-
    ```
 
 4. Create a 高火力 DOK task on the `h100-80gb` plan with:
-   - environment variables from `.env.example` (`SAKURA_AI_API_KEY` is required; the container exits immediately without it);
+   - environment variables from `.env.example` (`SAKURA_AI_API_KEY` is required; the container exits immediately without it. DOK reserves the `SAKURA_` prefix, so if the console rejects that name use `GATEWAY_API_KEY`);
    - **HTTP port `8080`**;
    - **a maximum execution time you are comfortable paying for** (the default is 20 days).
 5. Copy the task's HTTPS URL. Until the container is listening, DOK returns 503.

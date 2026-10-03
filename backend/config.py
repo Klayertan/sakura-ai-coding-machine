@@ -38,7 +38,8 @@ class Settings:
         d = cls()
         try:
             return cls(
-                api_key=env.get('SAKURA_AI_API_KEY', '').strip(),
+                # DOK reserves the SAKURA_ prefix for its own variables, so accept a neutral name too.
+                api_key=(env.get('SAKURA_AI_API_KEY') or env.get('GATEWAY_API_KEY', '')).strip(),
                 allow_no_auth=_flag(env.get('ALLOW_NO_AUTH')),
                 provider=env.get('INFERENCE_PROVIDER', d.provider).strip().lower(),
                 ollama_url=env.get('OLLAMA_URL', d.ollama_url).rstrip('/'),
@@ -60,7 +61,7 @@ class Settings:
             return
         if not self.api_key:
             raise ConfigError(
-                'SAKURA_AI_API_KEY is not set. Generate one with `openssl rand -hex 32`. '
+                'SAKURA_AI_API_KEY (or GATEWAY_API_KEY) is not set. Generate one with `openssl rand -hex 32`. '
                 '(Set ALLOW_NO_AUTH=1 only for local development.)'
             )
         if self.api_key in PLACEHOLDER_KEYS:

@@ -83,6 +83,7 @@ def test_settings_from_env():
                            'OLLAMA_URL': 'http://x:1/', 'SAKURA_TASK_ID': 't'})
     assert (s.api_key, s.gpu_yen_per_hour, s.ollama_url, s.task_id) == ('k', 5.0, 'http://x:1', 't')
     assert Settings.from_env({}).gpu_yen_per_hour == 1008.0
+    assert Settings.from_env({'GATEWAY_API_KEY': 'alt'}).api_key == 'alt'
     with pytest.raises(ConfigError):
         Settings.from_env({'VOUCHER_YEN': 'lots'})
 
