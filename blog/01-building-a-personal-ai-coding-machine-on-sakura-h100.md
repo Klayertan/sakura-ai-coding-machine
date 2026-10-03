@@ -53,19 +53,22 @@ DOK is a container-based GPU service. That fits this project well because I can 
 
 Sakura also provides an external connection feature. From the Internet I connect over HTTPS; Sakura maps that connection to the HTTP port exposed by my container. That means the first version does not need its own TLS reverse proxy inside the container.
 
-The trade-off is persistence. DOK task-local storage is ephemeral, so model-download strategy matters. Pulling a 60+ GB model on every cold start would be wasteful. The production version should cache model weights using Sakura Object Storage or another persistent model-distribution path.
+The trade-off is persistence. DOK task-local storage is ephemeral, so model-download strategy matters. DOK does not bill for pulling the container image, and it allows images up to 30 GB, so the ~14 GB `gpt-oss:20b` weights can simply be baked into the image. The ~65 GB `gpt-oss:120b` does not fit; for that model the options are pulling at startup or caching the weights in Sakura Object Storage.
 
 ## The gateway
 
 I do not expose Ollama's port directly. Instead, a tiny FastAPI service sits in front of it. The gateway provides:
 
-- bearer-token authentication;
+- bearer-token authentication, and it refuses to start at all without a real key;
 - a `/health` endpoint;
 - model discovery;
-- a `/api/chat` endpoint;
-- an approximate GPU-cost/voucher meter.
+- a `/api/chat` endpoint with streaming;
+- an approximate GPU-cost/voucher meter with live GPU memory and utilisation;
+- an idle timer that shuts the container down so a forgotten task stops billing.
 
-The current cost meter is intentionally approximate. It uses task uptime multiplied by a configurable yen-per-hour value. Later I want to replace this with actual Sakura billing/task data.
+The gateway talks to the model through a small provider interface rather than calling Ollama directly, so vLLM can be added later without touching the client.
+
+The current cost meter is intentionally approximate. It uses task uptime multiplied by a configurable yen-per-hour value, which defaults to the H100 plan's ¥1,008 per hour. At that rate a ¥100,000 voucher is about 99 GPU-hours. Later I want to replace this with actual Sakura billing/task data.
 
 ## From chatbot to coding agent
 
@@ -109,7 +112,7 @@ If I deliberately switch back to Claude or a hosted GPT model, that request will
 My roadmap is:
 
 1. prove Ollama inference on one Sakura H100;
-2. add streaming responses;
+2. ~~add streaming responses~~ (done);
 3. build a native/simple Mac GUI;
 4. add repository indexing and safe file editing;
 5. add a permissioned terminal/tool loop;
