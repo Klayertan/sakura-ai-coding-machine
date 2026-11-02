@@ -1,12 +1,14 @@
-from .base import ChatChunk, InferenceProvider, ModelInfo, ProviderError
+from .base import ChatChunk, InferenceProvider, ModelInfo, ProviderError, Relay
 from .ollama import OllamaProvider
+from .openai_compat import OpenAICompatProvider
 
-__all__ = ['ChatChunk', 'InferenceProvider', 'ModelInfo', 'ProviderError',
-           'OllamaProvider', 'build_provider']
+__all__ = ['ChatChunk', 'InferenceProvider', 'ModelInfo', 'ProviderError', 'Relay',
+           'OllamaProvider', 'OpenAICompatProvider', 'build_provider']
 
 
 def build_provider(settings) -> InferenceProvider:
     if settings.provider == 'ollama':
         return OllamaProvider(settings.ollama_url, settings.provider_read_timeout_seconds)
-    # A VLLMProvider (OpenAI-compatible /v1/chat/completions) plugs in here.
+    if settings.provider == 'openai':
+        return OpenAICompatProvider(settings.inference_url, settings.provider_read_timeout_seconds)
     raise ValueError(f'Unknown INFERENCE_PROVIDER: {settings.provider!r}')

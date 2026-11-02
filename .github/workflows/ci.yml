@@ -30,3 +30,11 @@ jobs:
           platforms: linux/amd64
           push: false
           tags: sakura-ai-coding-machine:ci
+      - name: Build llama.cpp image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.llamacpp
+          platforms: linux/amd64
+          push: false
+          tags: sakura-ai-coding-machine:ci-llamacpp

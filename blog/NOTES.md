@@ -22,4 +22,14 @@ Material for article 6 (*Ollama vs vLLM*):
 
 - `InferenceProvider` has three methods; a vLLM provider maps `chat_stream` onto `/v1/chat/completions` SSE.
 
+## 2026-11-03 — DeepSeek on Sakura
+
+Material for article 02 (draft: `blog/02-why-i-moved-deepseek-from-my-m1-max-to-sakura.md`). Publish after the first real run.
+
+- Lead with memory, then heat: V4-Flash needs at least 92 GB (1-bit, Unsloth figure) and the Mac has 64 GB.
+- Heat needs a measured comparison: run `gpt-oss:20b` on the Mac and log temperature, power and fan speed for 15 minutes, then run the same job on Sakura.
+- Show the trade-off: the Mac has no hourly cost or cold start; the cloud has both.
+- Privacy: self-hosted weights mean prompts don't go to DeepSeek's API, but they do go to Sakura.
+- Disclose the Ambassador status and voucher.
+
 Not yet verified on real hardware, so do not state as fact in an article: the Docker image build, GPU detection in the `ollama/ollama` base image on DOK, streaming behaviour through the DOK endpoint, and whether DOK accepts a user variable named `SAKURA_AI_API_KEY`.

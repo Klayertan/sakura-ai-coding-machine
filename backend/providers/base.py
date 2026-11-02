@@ -5,7 +5,7 @@ for vLLM means adding one subclass and nothing else.
 """
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import AsyncGenerator, Dict, List, Optional
+from typing import AsyncGenerator, Awaitable, Callable, Dict, List, Optional
 
 
 class ProviderError(Exception):
@@ -34,6 +34,16 @@ class ModelInfo:
     size_bytes: Optional[int] = None
 
 
+@dataclass
+class Relay:
+    """An upstream OpenAI-format response, forwarded byte for byte."""
+
+    status_code: int
+    content_type: str
+    chunks: AsyncGenerator[bytes, None]
+    close: Callable[[], Awaitable[None]]
+
+
 class InferenceProvider(ABC):
     name = 'base'
 
@@ -54,6 +64,10 @@ class InferenceProvider(ABC):
     @abstractmethod
     async def health(self) -> bool:
         ...
+
+    async def relay_chat(self, payload: dict) -> Relay:
+        """Forward an OpenAI chat request, keeping fields such as tools intact."""
+        raise ProviderError(f'{self.name} does not support the OpenAI API', 501)
 
     async def aclose(self) -> None:
         pass
