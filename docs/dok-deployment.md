@@ -55,7 +55,7 @@ Tokens should appear incrementally, and the footer shows tokens/sec. Then confir
 | Option | Fits | Status |
 |---|---|---|
 | **Bake into the image** (`--build-arg BAKE_MODEL=...`) | Models under ~25 GB, e.g. `gpt-oss:20b` | Implemented. Pull is unbilled and needs no extra service. Build on a machine with enough disk; GitHub's hosted runners are too small. |
-| **Pull at startup** (`ollama pull`) | Any model | Implemented (default when not baked). Billed while downloading. |
+| **Pull at startup** (`ollama pull`) | Any model | Implemented (default when not baked). Billed while downloading: `gpt-oss:20b` is roughly 8 minutes (~¥130) at DOK's 250 Mbps. This is what the `publish.yml` workflow's slim image does. |
 | **Sakura Object Storage cache** | Models over 30 GB, e.g. `gpt-oss:120b` | Not implemented. Sketch: on startup, sync `OLLAMA_MODELS` from a bucket if present, otherwise pull and upload once. Worth doing only if it beats the Ollama registry on speed from inside DOK, so measure both first. |
 | DOK artifacts | Nothing | 20 GB cap, 72 h retention, download-only. |
 

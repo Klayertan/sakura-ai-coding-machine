@@ -73,6 +73,8 @@ Full details, DOK limits and troubleshooting: [docs/dok-deployment.md](docs/dok-
    ```
 
    Omit `BAKE_MODEL` for a small image that pulls the model at startup instead.
+
+   On a slow connection, skip the local build: add the registry credentials as the repository secrets `SAKURA_REGISTRY_USER` and `SAKURA_REGISTRY_PASSWORD`, then run the **Publish image to Sakura Container Registry** workflow from the Actions tab. It pushes the slim image directly from GitHub.
 3. Generate an API key and keep it somewhere safe:
 
    ```bash

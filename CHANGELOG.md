@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `publish.yml` workflow: builds the slim image on GitHub and pushes it to the Sakura Container Registry. Added because building the baked image locally needs ~18 GB of downloads plus an 18 GB upload, which was not workable on a slow home connection.
+
 ## 0.2.0 — 2026-10-03
 
 Review of the 0.1.0 scaffold. The Docker image and the DOK deployment are still unverified on real hardware; see `docs/dok-deployment.md`.
