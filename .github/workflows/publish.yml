@@ -7,7 +7,7 @@ on:
     inputs:
       registry:
         description: Registry host
-        default: sakura-ai.sakuracr.jp
+        default: klayer.sakuracr.jp
         required: true
       image:
         description: Image name
