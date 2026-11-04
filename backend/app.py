@@ -13,7 +13,7 @@ import time
 from contextlib import asynccontextmanager
 from typing import Callable, List, Literal, Optional
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -214,6 +214,53 @@ def create_app(
         return StreamingResponse(
             body(),
             media_type='application/x-ndjson',
+            headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'},
+        )
+
+    @app.get('/v1/models', dependencies=[Depends(require_auth)])
+    async def openai_models():
+        try:
+            found = await provider.list_models()
+        except ProviderError as e:
+            raise HTTPException(status_code=e.status_code, detail=e.detail)
+        return {'object': 'list', 'data': [
+            {'id': m.name, 'object': 'model', 'owned_by': provider.name} for m in found
+        ]}
+
+    @app.post('/v1/chat/completions', dependencies=[Depends(require_auth)])
+    async def openai_chat(request: Request):
+        """For agents such as OpenCode: tools and other fields reach the model unchanged."""
+        try:
+            payload = json.loads(await request.body())
+        except ValueError:
+            raise HTTPException(status_code=400, detail='Request body is not valid JSON')
+        if not isinstance(payload, dict):
+            raise HTTPException(status_code=400, detail='Request body must be a JSON object')
+        payload.setdefault('model', settings.default_model)
+
+        activity.begin()
+        try:
+            relay = await provider.relay_chat(payload)
+        except ProviderError as e:
+            activity.end()
+            raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+        async def body():
+            try:
+                async for chunk in relay.chunks:
+                    activity.touch()
+                    yield chunk
+            except ProviderError as e:
+                # Headers are already sent, so the client sees a truncated stream.
+                log.warning('Relay stopped: %s', e.detail)
+            finally:
+                await relay.close()
+                activity.end()
+
+        return StreamingResponse(
+            body(),
+            status_code=relay.status_code,
+            media_type=relay.content_type,
             headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'},
         )
 

@@ -53,6 +53,8 @@ Failures before the first token (unknown model, provider down) are returned as n
 
 This format is the gateway's own, not Ollama's, so the client does not change when the provider does.
 
+Agents use the OpenAI-format routes instead, with the same key: `POST /v1/chat/completions` passes requests through unchanged, including tool calls, and `GET /v1/models` lists models. To run DeepSeek with OpenCode, see [docs/deepseek-agent.md](docs/deepseek-agent.md).
+
 ## Why start with `gpt-oss:20b`?
 
 It is about 14 GB in Ollama, so it can be baked into the image (DOK's image limit is 30 GB) or pulled quickly at startup. After the pipeline works, try `gpt-oss:120b` on the 80 GB H100; it is about 65 GB, which is too large to bake, so it is pulled at task start (see [docs/dok-deployment.md](docs/dok-deployment.md)).
@@ -142,19 +144,22 @@ To add a backend such as vLLM, subclass `InferenceProvider` in `backend/provider
 - [x] Provider abstraction (Ollama first)
 - [x] Backend tests + CI
 - [x] Idle auto-shutdown
+- [x] OpenAI-compatible provider and gateway routes
 - [ ] Validate end to end on a real DOK H100 task (M0)
+- [ ] Run DeepSeek-V4-Flash with OpenCode on DOK ([guide](docs/deepseek-agent.md))
+- [ ] Group of agents: planner, coder, reviewer
 - [ ] Repository context subsystem ([design](docs/repo-context-design.md))
 - [ ] Patch workflow with diff approval
 - [ ] Safe terminal tool execution and test/fix loop
 - [ ] Desktop UI
 - [ ] Local usage history across tasks; actual Sakura billing ingestion
 - [ ] Object Storage model cache for models over 30 GB
-- [ ] vLLM provider
-- [ ] OpenCode/Aider adapter
+- [ ] vLLM deployment
 
 ## More
 
 - [CHANGELOG.md](CHANGELOG.md)
 - [docs/dok-deployment.md](docs/dok-deployment.md)
+- [docs/deepseek-agent.md](docs/deepseek-agent.md)
 - [docs/repo-context-design.md](docs/repo-context-design.md)
 - Blog: [`blog/01-building-a-personal-ai-coding-machine-on-sakura-h100.md`](blog/01-building-a-personal-ai-coding-machine-on-sakura-h100.md)

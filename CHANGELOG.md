@@ -3,6 +3,10 @@
 ## Unreleased
 
 ### Added
+- **OpenAI-compatible gateway routes**: authenticated `/v1/chat/completions` and `/v1/models`, so agents such as OpenCode can use the gateway. Requests and streams pass through unchanged, including tool calls, and they work with Ollama too.
+- **`OpenAICompatProvider`** (`INFERENCE_PROVIDER=openai`) for llama-server, vLLM and similar servers, configured with `INFERENCE_URL` and `INFERENCE_MODEL`.
+- **DeepSeek image** (`Dockerfile.llamacpp`, `backend/start-llamacpp.sh`): serves DeepSeek-V4-Flash-0731 with llama.cpp v0.5.0, and checks disk space and shard count around the billed download. Not yet tested on a real task; see `docs/deepseek-agent.md`.
+- `publish.yml` input to choose the Dockerfile.
 - `publish.yml` workflow: builds the slim image on GitHub and pushes it to the Sakura Container Registry. Added because building the baked image locally needs ~18 GB of downloads plus an 18 GB upload, which was not workable on a slow home connection.
 
 ## 0.2.0 — 2026-10-03

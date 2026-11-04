@@ -22,6 +22,8 @@ class Settings:
     allow_no_auth: bool = False
     provider: str = 'ollama'
     ollama_url: str = 'http://127.0.0.1:11434'
+    # OpenAI-compatible server for INFERENCE_PROVIDER=openai. Port 8080 is the gateway's.
+    inference_url: str = 'http://127.0.0.1:8081'
     default_model: str = 'gpt-oss:20b'
     voucher_yen: float = 100000.0
     # DOK H100 list price: 0.28 yen/s = 1,008 yen/h, tax included (checked 2026-10).
@@ -43,7 +45,8 @@ class Settings:
                 allow_no_auth=_flag(env.get('ALLOW_NO_AUTH')),
                 provider=env.get('INFERENCE_PROVIDER', d.provider).strip().lower(),
                 ollama_url=env.get('OLLAMA_URL', d.ollama_url).rstrip('/'),
-                default_model=env.get('OLLAMA_MODEL', d.default_model).strip(),
+                inference_url=env.get('INFERENCE_URL', d.inference_url).rstrip('/'),
+                default_model=(env.get('INFERENCE_MODEL') or env.get('OLLAMA_MODEL', d.default_model)).strip(),
                 voucher_yen=float(env.get('VOUCHER_YEN', d.voucher_yen)),
                 gpu_yen_per_hour=float(env.get('GPU_YEN_PER_HOUR', d.gpu_yen_per_hour)),
                 idle_shutdown_minutes=float(env.get('IDLE_SHUTDOWN_MINUTES', d.idle_shutdown_minutes)),

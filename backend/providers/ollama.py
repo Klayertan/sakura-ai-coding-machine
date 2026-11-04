@@ -4,9 +4,10 @@ from typing import AsyncGenerator, Dict, List, Optional
 import httpx
 
 from .base import ChatChunk, InferenceProvider, ModelInfo, ProviderError
+from .openai_compat import OpenAIRelayMixin
 
 
-class OllamaProvider(InferenceProvider):
+class OllamaProvider(OpenAIRelayMixin, InferenceProvider):
     name = 'ollama'
 
     def __init__(self, base_url: str, read_timeout: float = 900.0,

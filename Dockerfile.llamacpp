@@ -1,0 +1,24 @@
+# llama-server plus the gateway, for models too large for Ollama packaging or the
+# 30 GB DOK image limit. Weights are downloaded when the task starts (billed).
+# v0.5.0 is the newest versioned CUDA image, and includes DeepSeek V4 and its tool format.
+ARG LLAMA_VERSION=v0.5.0
+FROM ghcr.io/ggml-org/llama.cpp:server-cuda-${LLAMA_VERSION}
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl ca-certificates python3 python3-venv \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/venv
+ENV PATH=/opt/venv/bin:/app:$PATH
+
+WORKDIR /gateway
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt huggingface_hub==2.4.0
+
+COPY backend/ .
+
+EXPOSE 8080
+# The base image's entrypoint is llama-server; the script runs both processes.
+ENTRYPOINT []
+CMD ["./start-llamacpp.sh"]
