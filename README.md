@@ -1,8 +1,8 @@
 # Sakura AI Coding Machine 🌸⚡
 
-Use a Sakura Cloud GPU as your personal AI inference server, with Ollama serving an open-weight model and a small authenticated API that your Mac can call.
+Run DeepSeek-V4-Flash for coding on Sakura Cloud, compare one H100 with eight H100s, and document the experiment in the [blog drafts](blog/).
 
-**Goal:** use Sakura GPU credits for inference instead of consuming Anthropic/OpenAI hosted-model tokens.
+Start with the [DeepSeek deployment and benchmark guide](docs/deepseek-agent.md). The earlier Ollama gateway remains available for the original inference experiments. The [ComfyUI art project](https://github.com/Klayertan/sakura-comfyui-dok) has its own repository.
 
 ## Architecture
 
@@ -146,7 +146,8 @@ To add a backend such as vLLM, subclass `InferenceProvider` in `backend/provider
 - [x] Idle auto-shutdown
 - [x] OpenAI-compatible provider and gateway routes
 - [ ] Validate end to end on a real DOK H100 task (M0)
-- [ ] Run DeepSeek-V4-Flash with OpenCode on DOK ([guide](docs/deepseek-agent.md))
+- [ ] Verify DeepSeek-V4-Flash with OpenCode on one DOK H100 ([guide](docs/deepseek-agent.md))
+- [ ] Repeat the benchmark on eight H100s and record the comparison in the blog
 - [ ] Group of agents: planner, coder, reviewer
 - [ ] Repository context subsystem ([design](docs/repo-context-design.md))
 - [ ] Patch workflow with diff approval

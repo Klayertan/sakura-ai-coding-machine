@@ -13,6 +13,12 @@ RUN python3 -m venv /opt/venv
 ENV PATH=/opt/venv/bin:/app:$PATH
 
 WORKDIR /gateway
+# The upstream CUDA image ships llama-server and its shared libraries in /app.
+# Check the loader before CI or the publish workflow can ship the image.
+RUN echo /app > /etc/ld.so.conf.d/llama-cpp.conf \
+ && ldconfig \
+ && llama-server --version
+
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt huggingface_hub==2.4.0
 

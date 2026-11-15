@@ -6,19 +6,34 @@ export INFERENCE_PROVIDER=openai
 export INFERENCE_MODEL="${INFERENCE_MODEL:-deepseek-v4-flash}"
 export INFERENCE_URL="${INFERENCE_URL:-http://127.0.0.1:8081}"
 
-# Fail before anything billable happens if the gateway would refuse to start.
+# Check configuration and the server binary before downloading the weights.
 python3 config.py
+if ! llama-server --version; then
+  echo "ERROR: llama-server startup check failed. Skipping the model download." >&2
+  exit 1
+fi
 
 MODEL_REPO="${MODEL_REPO:-unsloth/DeepSeek-V4-Flash-0731-GGUF}"
+revision_args=()
+if [ "$MODEL_REPO" = "unsloth/DeepSeek-V4-Flash-0731-GGUF" ]; then
+  MODEL_REVISION="${MODEL_REVISION:-fbbb5b93fb787c21338159b0af3318bb3f4d9768}"
+fi
+if [ -n "${MODEL_REVISION:-}" ]; then
+  revision_args=(--revision "$MODEL_REVISION")
+fi
 MODEL_QUANT="${MODEL_QUANT:-UD-IQ3_XXS}"
 MODEL_DIR="${MODEL_DIR:-/opt/models}"
 MIN_FREE_GB="${MIN_FREE_GB:-120}"
 MODEL_LOAD_TIMEOUT="${MODEL_LOAD_TIMEOUT:-1800}"
 
-if command -v nvidia-smi >/dev/null 2>&1; then
-  nvidia-smi --query-gpu=name,memory.total --format=csv,noheader || true
-else
-  echo "WARNING: nvidia-smi not found; llama-server will fall back to CPU." >&2
+gpu_count=0
+if gpu_info=$(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader) && [ -n "$gpu_info" ]; then
+  printf '%s\n' "$gpu_info"
+  gpu_count=$(printf '%s\n' "$gpu_info" | wc -l | tr -d ' ')
+fi
+if [ -n "${EXPECTED_GPU_COUNT:-}" ] && [ "$gpu_count" != "$EXPECTED_GPU_COUNT" ]; then
+  echo "ERROR: expected $EXPECTED_GPU_COUNT visible GPUs, found $gpu_count." >&2
+  exit 1
 fi
 
 mkdir -p "$MODEL_DIR"
@@ -28,10 +43,10 @@ if [ "$free_gb" -lt "$MIN_FREE_GB" ]; then
   exit 1
 fi
 
-# The largest billed step: about 55 minutes for 104 GB at DOK's 250 Mbps.
-echo "Downloading $MODEL_REPO/$MODEL_QUANT to $MODEL_DIR ..."
+# DOK bills this transfer as container runtime. Its duration varies by task.
+echo "Downloading $MODEL_REPO@${MODEL_REVISION:-main} ($MODEL_QUANT) to $MODEL_DIR ..."
 date
-hf download "$MODEL_REPO" --include "$MODEL_QUANT/*" --local-dir "$MODEL_DIR"
+hf download "$MODEL_REPO" "${revision_args[@]}" --include "$MODEL_QUANT/*" --local-dir "$MODEL_DIR"
 date
 
 first=$(ls "$MODEL_DIR/$MODEL_QUANT"/*-00001-of-*.gguf 2>/dev/null | head -n 1 || true)
@@ -57,6 +72,7 @@ llama-server \
   --ctx-size "${LLAMA_CTX_SIZE:-65536}" \
   --parallel "${LLAMA_PARALLEL:-1}" \
   --gpu-layers "${LLAMA_GPU_LAYERS:-auto}" \
+  --split-mode layer \
   --temp 1.0 \
   --top-p 0.95 &
 server=$!

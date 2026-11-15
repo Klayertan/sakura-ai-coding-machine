@@ -35,9 +35,9 @@ A single H100 has 80 GB of VRAM. The 3-bit version I chose is 104 GB, so part of
 
 ## The cloud has its own costs
 
-The Mac has no hourly fee and starts immediately. Sakura costs ¥1,008 per hour, and DOK's storage doesn't persist, so the weights are downloaded on every start. At 250 Mbps that should take about 56 minutes, or about ¥940.
+The Mac has no hourly fee and starts immediately. One H100 on Sakura costs ¥1,008 per hour, and this DOK setup downloads the weights every time. On November 13, the first download took 7 minutes and 37 seconds. Then the server stopped because it couldn't find a shared library. I got a startup log and a download time out of that run, and the model never reached its first token.
 
-[MEASURE: real download time, load time and cost of the benchmark job.]
+[MEASURE: download and load time after the fix, and the total cost of the benchmark job.]
 
 ## Can it do real work?
 
@@ -53,4 +53,4 @@ Running the weights myself means my prompts don't go to DeepSeek's API. They do 
 
 ## Next
 
-Once one agent works reliably, I want to try a small team of agents: a planner, a coder and a reviewer sharing the same model server.
+Once the one-H100 test works, I'll run the same job on eight H100s with the same weights and server settings. I'll compare how long I wait for the first token, how long it takes to fix the test, and what each job costs. That will give me a baseline for trying a small team later.
