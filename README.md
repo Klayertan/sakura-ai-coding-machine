@@ -7,7 +7,7 @@ Start with the [DeepSeek deployment and benchmark guide](docs/deepseek-agent.md)
 ## Architecture
 
 ```text
-MacBook / client (client/sakura_chat.py)
+MacBook / OpenCode
         |
         | HTTPS (TLS terminated by Sakura)
         v
@@ -18,16 +18,13 @@ Sakura 高火力 DOK external endpoint
 FastAPI gateway :8080      auth, streaming, usage, idle shutdown
         |
         v
-InferenceProvider          OllamaProvider today, VLLMProvider later
+llama-server 127.0.0.1:8081  DeepSeek-V4-Flash
         |
         v
-Ollama 127.0.0.1:11434     loopback only, never exposed
-        |
-        v
-NVIDIA H100 80 GB + open-weight model
+NVIDIA H100 × 1, then × 8
 ```
 
-No OpenAI or Anthropic API is required for inference. `gpt-oss` is an open-weight model; running it yourself does not consume ChatGPT/Codex API quota.
+OpenCode uses the gateway's authenticated `/v1/chat/completions` and `/v1/models` endpoints. The [benchmark guide](docs/deepseek-agent.md) covers the registry build, task settings and what to measure on each GPU plan.
 
 ## API
 
@@ -55,11 +52,11 @@ This format is the gateway's own, not Ollama's, so the client does not change wh
 
 Agents use the OpenAI-format routes instead, with the same key: `POST /v1/chat/completions` passes requests through unchanged, including tool calls, and `GET /v1/models` lists models. To run DeepSeek with OpenCode, see [docs/deepseek-agent.md](docs/deepseek-agent.md).
 
-## Why start with `gpt-oss:20b`?
+## Original Ollama experiment
 
 It is about 14 GB in Ollama, so it can be baked into the image (DOK's image limit is 30 GB) or pulled quickly at startup. After the pipeline works, try `gpt-oss:120b` on the 80 GB H100; it is about 65 GB, which is too large to bake, so it is pulled at task start (see [docs/dok-deployment.md](docs/dok-deployment.md)).
 
-## Quick start on Sakura DOK
+### Run the Ollama reference image
 
 Full details, DOK limits and troubleshooting: [docs/dok-deployment.md](docs/dok-deployment.md).
 
@@ -76,7 +73,7 @@ Full details, DOK limits and troubleshooting: [docs/dok-deployment.md](docs/dok-
 
    Omit `BAKE_MODEL` for a small image that pulls the model at startup instead.
 
-   On a slow connection, skip the local build: add the registry credentials as the repository secrets `SAKURA_REGISTRY_USER` and `SAKURA_REGISTRY_PASSWORD`, then run the **Publish image to Sakura Container Registry** workflow from the Actions tab. It pushes the slim image directly from GitHub.
+   To publish the slim Ollama image from GitHub, run **Publish image to Sakura Container Registry** with Dockerfile `Dockerfile` and image `sakura-ai`. The workflow uses the `SAKURA_REGISTRY_USER` and `SAKURA_REGISTRY_PASSWORD` repository secrets.
 3. Generate an API key and keep it somewhere safe:
 
    ```bash
@@ -114,7 +111,7 @@ DOK bills per second while the container runs: the H100 plan is ¥0.28/s = ¥1,0
 
 ## Security
 
-- Only the gateway on port `8080` is exposed. Ollama binds to loopback inside the container.
+- Only the gateway on port `8080` is exposed. The model server binds to loopback inside the container.
 - The gateway **refuses to start** without a real `SAKURA_AI_API_KEY` (unset, placeholder and short keys are rejected). `ALLOW_NO_AUTH=1` exists for local development only.
 - `/health` is the only unauthenticated endpoint; interactive API docs are disabled.
 - Secrets come from environment variables; `.env` is git-ignored.

@@ -11,11 +11,11 @@ on:
         required: true
       image:
         description: Image name
-        default: sakura-ai
+        default: sakura-ai-deepseek
         required: true
       dockerfile:
-        description: Dockerfile (use Dockerfile.llamacpp and image sakura-ai-deepseek for DeepSeek)
-        default: Dockerfile
+        description: Dockerfile (use Dockerfile with image sakura-ai for the Ollama reference)
+        default: Dockerfile.llamacpp
         required: true
 jobs:
   publish:
